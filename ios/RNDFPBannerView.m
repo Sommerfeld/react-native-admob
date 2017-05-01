@@ -42,6 +42,10 @@
         return kGADAdSizeSmartBannerPortrait;
     } else if ([bannerSize isEqualToString:@"smartBannerLandscape"]) {
         return kGADAdSizeSmartBannerLandscape;
+    } else if ([bannerSize isEqualToString:@"skyscraper"]) {
+        return kGADAdSizeSkyscraper;
+    } else if ([bannerSize isEqualToString:@"fluid"]) {
+        return kGADAdSizeFluid;
     }
     else {
         return kGADAdSizeBanner;
