@@ -1,5 +1,7 @@
 #import "RNDFPBannerView.h"
 
+#import <DTBiOSSDK/DTBiOSSDK.h>
+
 #if __has_include(<React/RCTBridgeModule.h>)
 #import <React/RCTBridgeModule.h>
 #import <React/UIView+React.h>
@@ -49,7 +51,7 @@
 }
 
 -(void)loadBanner {
-    if (_adUnitID && _bannerSize) {
+    if (_adUnitID && _slotUUID && _bannerSize) {
         GADAdSize size = [self getAdSizeFromString:_bannerSize];
         _bannerView = [[DFPBannerView alloc] initWithAdSize:size];
         [_bannerView setAppEventDelegate:self]; //added Admob event dispatch listener
@@ -66,21 +68,12 @@
         _bannerView.adUnitID = _adUnitID;
         _bannerView.rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
         
-        DTBAdSize *sizeForDTBAdLoader = [[DTBAdSize alloc] initBannerAdSizeWithWidth:320 height:50 andSlotUUID:_adUnitID];
+ 
+        DTBAdSize *sizeForDTBAdLoader = [[DTBAdSize alloc] initBannerAdSizeWithWidth:size.size.width height:size.size.height andSlotUUID:_slotUUID];
+        
         DTBAdLoader *adLoader = [DTBAdLoader new];
         [adLoader setSizes:sizeForDTBAdLoader, nil];
         [adLoader loadAd:self];
-        
-        // GADRequest *request = [GADRequest request];
-        // if(_testDeviceID) {
-        //     if([_testDeviceID isEqualToString:@"EMULATOR"]) {
-        //         request.testDevices = @[kGADSimulatorID];
-        //     } else {
-        //         request.testDevices = @[_testDeviceID];
-        //     }
-        // }
-
-        // [_bannerView loadRequest:request];
     }
 }
 
@@ -118,6 +111,18 @@ didReceiveAppEvent:(NSString *)name
         [self loadBanner];
     }
 }
+- (void)setSlotUUID:(NSString *)slotUUID
+{
+    if(![slotUUID isEqual:_slotUUID]) {
+        _slotUUID = slotUUID;
+        if (_bannerView) {
+            [_bannerView removeFromSuperview];
+        }
+        
+        [self loadBanner];
+    }
+}
+
 - (void)setTestDeviceID:(NSString *)testDeviceID
 {
     if(![testDeviceID isEqual:_testDeviceID]) {
@@ -196,9 +201,19 @@ didFailToReceiveAdWithError:(GADRequestError *)error {
     NSLog(@"Failed to load ad :(");
     /**Please implement the logic to send ad request without our parameters if you want to
        show ads from other ad networks when Amazon ad request fails**/
+    DFPRequest *request = [DFPRequest request];
+    if(_testDeviceID) {
+        if([_testDeviceID isEqualToString:@"EMULATOR"]) {
+            request.testDevices = @[kGADSimulatorID];
+        } else {
+            request.testDevices = @[_testDeviceID];
+        }
+    }
+    [_bannerView loadRequest:request];
 }
 - (void)onSuccess: (DTBAdResponse *)adResponse {    
-    self.bannerView.adUnitID = @"your_DFP_adUnitID "; self.bannerView.rootViewController = self;
+    _bannerView.adUnitID = _adUnitID;
+    _bannerView.rootViewController = self;
     DFPRequest *request = [DFPRequest request];
     if(_testDeviceID) {
         if([_testDeviceID isEqualToString:@"EMULATOR"]) {
@@ -208,7 +223,7 @@ didFailToReceiveAdWithError:(GADRequestError *)error {
         }
     }
     request.customTargeting = adResponse.customTargetting;
-    [self.bannerView loadRequest:request];
+    [_bannerView loadRequest:request];
 }
 
 @end

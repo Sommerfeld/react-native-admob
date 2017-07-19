@@ -9,7 +9,6 @@ import {
 const RNBanner = requireNativeComponent('RNAdMobDFP', PublisherBanner);
 
 export default class PublisherBanner extends React.Component {
-
   constructor() {
     super();
     this.onSizeChange = this.onSizeChange.bind(this);
@@ -24,22 +23,33 @@ export default class PublisherBanner extends React.Component {
   }
 
   render() {
-    const { adUnitID, testDeviceID, bannerSize, style, didFailToReceiveAdWithError,admobDispatchAppEvent } = this.props;
+    const {
+      adUnitID,
+      testDeviceID,
+      bannerSize,
+      style,
+      didFailToReceiveAdWithError,
+      admobDispatchAppEvent,
+      slotUUID,
+    } = this.props;
     return (
       <View style={this.props.style}>
         <RNBanner
           style={this.state.style}
           onSizeChange={this.onSizeChange.bind(this)}
           onAdViewDidReceiveAd={this.props.adViewDidReceiveAd}
-          onDidFailToReceiveAdWithError={(event) => didFailToReceiveAdWithError(event.nativeEvent.error)}
+          onDidFailToReceiveAdWithError={event =>
+            didFailToReceiveAdWithError(event.nativeEvent.error)}
           onAdViewWillPresentScreen={this.props.adViewWillPresentScreen}
           onAdViewWillDismissScreen={this.props.adViewWillDismissScreen}
           onAdViewDidDismissScreen={this.props.adViewDidDismissScreen}
           onAdViewWillLeaveApplication={this.props.adViewWillLeaveApplication}
-          onAdmobDispatchAppEvent={(event) => admobDispatchAppEvent(event)}
+          onAdmobDispatchAppEvent={event => admobDispatchAppEvent(event)}
           testDeviceID={testDeviceID}
           adUnitID={adUnitID}
-          bannerSize={bannerSize} />
+          slotUUID={slotUUID}
+          bannerSize={bannerSize}
+        />
       </View>
     );
   }
@@ -69,6 +79,11 @@ PublisherBanner.propTypes = {
   adUnitID: React.PropTypes.string,
 
   /**
+   * slotUUID
+   */
+  slotUUID: React.PropTypes.string,
+
+  /**
    * Test device ID
    */
   testDeviceID: React.PropTypes.string,
@@ -86,5 +101,8 @@ PublisherBanner.propTypes = {
   ...View.propTypes,
 };
 
-PublisherBanner.defaultProps = { bannerSize: 'smartBannerPortrait', didFailToReceiveAdWithError: () => {} ,
-admobDispatchAppEvent: () => {}};
+PublisherBanner.defaultProps = {
+  bannerSize: 'smartBannerPortrait',
+  didFailToReceiveAdWithError: () => {},
+  admobDispatchAppEvent: () => {},
+};
