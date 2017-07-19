@@ -44,6 +44,10 @@
         return kGADAdSizeSmartBannerPortrait;
     } else if ([bannerSize isEqualToString:@"smartBannerLandscape"]) {
         return kGADAdSizeSmartBannerLandscape;
+    } else if ([bannerSize isEqualToString:@"skyscraper"]) {
+        return kGADAdSizeSkyscraper;
+    } else if ([bannerSize isEqualToString:@"fluid"]) {
+        return kGADAdSizeFluid;
     }
     else {
         return kGADAdSizeBanner;
@@ -138,7 +142,7 @@ didReceiveAppEvent:(NSString *)name
 {
     [super layoutSubviews ];
 
-    _bannerView.frame = CGRectMake(
+    self.frame = CGRectMake(
                                    self.bounds.origin.x,
                                    self.bounds.origin.x,
                                    _bannerView.frame.size.width,
