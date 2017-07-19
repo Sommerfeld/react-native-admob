@@ -61,19 +61,26 @@
                 });
             }
         }
+        
         _bannerView.delegate = self;
         _bannerView.adUnitID = _adUnitID;
         _bannerView.rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-        GADRequest *request = [GADRequest request];
-        if(_testDeviceID) {
-            if([_testDeviceID isEqualToString:@"EMULATOR"]) {
-                request.testDevices = @[kGADSimulatorID];
-            } else {
-                request.testDevices = @[_testDeviceID];
-            }
-        }
+        
+        DTBAdSize *sizeForDTBAdLoader = [[DTBAdSize alloc] initBannerAdSizeWithWidth:320 height:50 andSlotUUID:_adUnitID];
+        DTBAdLoader *adLoader = [DTBAdLoader new];
+        [adLoader setSizes:sizeForDTBAdLoader, nil];
+        [adLoader loadAd:self];
+        
+        // GADRequest *request = [GADRequest request];
+        // if(_testDeviceID) {
+        //     if([_testDeviceID isEqualToString:@"EMULATOR"]) {
+        //         request.testDevices = @[kGADSimulatorID];
+        //     } else {
+        //         request.testDevices = @[_testDeviceID];
+        //     }
+        // }
 
-        [_bannerView loadRequest:request];
+        // [_bannerView loadRequest:request];
     }
 }
 
@@ -182,6 +189,26 @@ didFailToReceiveAdWithError:(GADRequestError *)error {
     if (self.onAdViewWillLeaveApplication) {
         self.onAdViewWillLeaveApplication(@{});
     }
+}
+
+#pragma mark - DTBAdCallback
+- (void)onFailure: (DTBAdError)error {
+    NSLog(@"Failed to load ad :(");
+    /**Please implement the logic to send ad request without our parameters if you want to
+       show ads from other ad networks when Amazon ad request fails**/
+}
+- (void)onSuccess: (DTBAdResponse *)adResponse {    
+    self.bannerView.adUnitID = @"your_DFP_adUnitID "; self.bannerView.rootViewController = self;
+    DFPRequest *request = [DFPRequest request];
+    if(_testDeviceID) {
+        if([_testDeviceID isEqualToString:@"EMULATOR"]) {
+            request.testDevices = @[kGADSimulatorID];
+        } else {
+            request.testDevices = @[_testDeviceID];
+        }
+    }
+    request.customTargeting = adResponse.customTargetting;
+    [self.bannerView loadRequest:request];
 }
 
 @end
