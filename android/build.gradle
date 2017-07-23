@@ -12,6 +12,12 @@ android {
     }
 }
 
+repositories {
+    flatDir{
+        dirs '../../../android/app/libs'
+    }
+}
+
 dependencies {
     compile 'com.facebook.react:react-native:+'
     compile 'com.google.android.gms:play-services-ads:+'

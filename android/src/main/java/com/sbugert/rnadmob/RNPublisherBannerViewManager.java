@@ -15,6 +15,7 @@ import com.facebook.react.views.view.ReactViewGroup;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.doubleclick.AppEventListener;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
+import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
@@ -43,14 +44,10 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
   private String mSlotUUID = null;
 
   public enum Events {
-    EVENT_SIZE_CHANGE("onSizeChange"),
-    EVENT_RECEIVE_AD("onAdViewDidReceiveAd"),
-    EVENT_ERROR("onDidFailToReceiveAdWithError"),
-    EVENT_WILL_PRESENT("onAdViewWillPresentScreen"),
-    EVENT_WILL_DISMISS("onAdViewWillDismissScreen"),
-    EVENT_DID_DISMISS("onAdViewDidDismissScreen"),
-    EVENT_WILL_LEAVE_APP("onAdViewWillLeaveApplication"),
-    EVENT_ADMOB_EVENT_RECEIVED("onAdmobDispatchAppEvent");
+    EVENT_SIZE_CHANGE("onSizeChange"), EVENT_RECEIVE_AD("onAdViewDidReceiveAd"), EVENT_ERROR(
+        "onDidFailToReceiveAdWithError"), EVENT_WILL_PRESENT("onAdViewWillPresentScreen"), EVENT_WILL_DISMISS(
+            "onAdViewWillDismissScreen"), EVENT_DID_DISMISS("onAdViewDidDismissScreen"), EVENT_WILL_LEAVE_APP(
+                "onAdViewWillLeaveApplication"), EVENT_ADMOB_EVENT_RECEIVED("onAdmobDispatchAppEvent");
 
     private final String mName;
 
@@ -72,7 +69,6 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
     return REACT_CLASS;
   }
 
-
   @Override
   public void onAppEvent(String name, String info) {
     String message = String.format("Received app event (%s, %s)", name, info);
@@ -89,16 +85,18 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
     ReactViewGroup view = new ReactViewGroup(themedReactContext);
     attachNewAdView(view);
     return view;
-   }
+  }
 
   int viewID = -1;
+
   protected void attachNewAdView(final ReactViewGroup view) {
     final PublisherAdView adView = new PublisherAdView(mThemedReactContext);
     adView.setAppEventListener(this);
     // destroy old AdView if present
     PublisherAdView oldAdView = (PublisherAdView) view.getChildAt(0);
     view.removeAllViews();
-    if (oldAdView != null) oldAdView.destroy();
+    if (oldAdView != null)
+      oldAdView.destroy();
     view.addView(adView);
     attachEvents(view);
   }
@@ -122,18 +120,18 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
       public void onAdFailedToLoad(int errorCode) {
         WritableMap event = Arguments.createMap();
         switch (errorCode) {
-          case PublisherAdRequest.ERROR_CODE_INTERNAL_ERROR:
-            event.putString("error", "ERROR_CODE_INTERNAL_ERROR");
-            break;
-          case PublisherAdRequest.ERROR_CODE_INVALID_REQUEST:
-            event.putString("error", "ERROR_CODE_INVALID_REQUEST");
-            break;
-          case PublisherAdRequest.ERROR_CODE_NETWORK_ERROR:
-            event.putString("error", "ERROR_CODE_NETWORK_ERROR");
-            break;
-          case PublisherAdRequest.ERROR_CODE_NO_FILL:
-            event.putString("error", "ERROR_CODE_NO_FILL");
-            break;
+        case PublisherAdRequest.ERROR_CODE_INTERNAL_ERROR:
+          event.putString("error", "ERROR_CODE_INTERNAL_ERROR");
+          break;
+        case PublisherAdRequest.ERROR_CODE_INVALID_REQUEST:
+          event.putString("error", "ERROR_CODE_INVALID_REQUEST");
+          break;
+        case PublisherAdRequest.ERROR_CODE_NETWORK_ERROR:
+          event.putString("error", "ERROR_CODE_NETWORK_ERROR");
+          break;
+        case PublisherAdRequest.ERROR_CODE_NO_FILL:
+          event.putString("error", "ERROR_CODE_NO_FILL");
+          break;
         }
 
         mEventEmitter.receiveEvent(view.getId(), Events.EVENT_ERROR.toString(), event);
@@ -188,8 +186,7 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
     if (adSize == AdSize.SMART_BANNER) {
       width = (int) PixelUtil.toDIPFromPixel(adSize.getWidthInPixels(mThemedReactContext));
       height = (int) PixelUtil.toDIPFromPixel(adSize.getHeightInPixels(mThemedReactContext));
-    }
-    else {
+    } else {
       width = adSize.getWidth();
       height = adSize.getHeight();
     }
@@ -216,9 +213,9 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
   @ReactProp(name = PROP_SLOT_UUID)
   public void setSlotUUID(final ReactViewGroup view, final String slotUUID) {
     mSlotUUID = slotUUID;
-    loadAd(newAdView);
+    PublisherAdView adView = (PublisherAdView) view.getChildAt(0);
+    loadAd(adView);
   }
-
 
   @ReactProp(name = PROP_TEST_DEVICE_ID)
   public void setPropTestDeviceID(final ReactViewGroup view, final String testDeviceID) {
@@ -229,7 +226,7 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
 
     if (mSlotUUID != null && adView.getAdSizes() != null && adView.getAdUnitId() != null) {
       final DTBAdRequest loader = new DTBAdRequest();
-      
+
       loader.setSizes(new DTBAdSize(adView.getAdSize().getWidth(), adView.getAdSize().getHeight(), mSlotUUID));
       loader.loadAd(new DTBAdCallback() {
         @Override
@@ -238,7 +235,7 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
           /**Please implement the logic to send ad request without our parameters if you want to
           show ads from other ad networks when Amazon ad request fails**/
           PublisherAdRequest.Builder adRequestBuilder = new PublisherAdRequest.Builder();
-          if (testDeviceID != null){
+          if (testDeviceID != null) {
             if (testDeviceID.equals("EMULATOR")) {
               adRequestBuilder = adRequestBuilder.addTestDevice(PublisherAdRequest.DEVICE_ID_EMULATOR);
             } else {
@@ -248,41 +245,49 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
           PublisherAdRequest adRequest = adRequestBuilder.build();
           adView.loadAd(adRequest);
         }
+
         @Override
         public void onSuccess(DTBAdResponse dtbAdResponse) {
-          final PublisherAdRequest adRequest =
-          DTBAdUtil.INSTANCE.createPublisherAdRequestBuilder(dtbAdResponse).build();
+          PublisherAdRequest.Builder adRequestBuilder = DTBAdUtil.INSTANCE
+              .createPublisherAdRequestBuilder(dtbAdResponse);
+          if (testDeviceID != null) {
+            if (testDeviceID.equals("EMULATOR")) {
+              adRequestBuilder = adRequestBuilder.addTestDevice(PublisherAdRequest.DEVICE_ID_EMULATOR);
+            } else {
+              adRequestBuilder = adRequestBuilder.addTestDevice(testDeviceID);
+            }
+          }
+          final PublisherAdRequest adRequest = adRequestBuilder.build();
           adView.loadAd(adRequest);
         }
       });
     }
   }
 
-
   private AdSize getAdSizeFromString(String adSize) {
     switch (adSize) {
-      case "banner":
-        return AdSize.BANNER;
-      case "largeBanner":
-        return AdSize.LARGE_BANNER;
-      case "mediumRectangle":
-        return AdSize.MEDIUM_RECTANGLE;
-      case "fullBanner":
-        return AdSize.FULL_BANNER;
-      case "leaderBoard":
-        return AdSize.LEADERBOARD;
-      case "smartBannerPortrait":
-        return AdSize.SMART_BANNER;
-      case "smartBannerLandscape":
-        return AdSize.SMART_BANNER;
-      case "smartBanner":
-        return AdSize.SMART_BANNER;
-      case "fliud":
-        return AdSize.FLUID;
-      case "skyscraper":
-        return AdSize.WIDE_SKYSCRAPER;
-      default:
-        return AdSize.BANNER;
+    case "banner":
+      return AdSize.BANNER;
+    case "largeBanner":
+      return AdSize.LARGE_BANNER;
+    case "mediumRectangle":
+      return AdSize.MEDIUM_RECTANGLE;
+    case "fullBanner":
+      return AdSize.FULL_BANNER;
+    case "leaderBoard":
+      return AdSize.LEADERBOARD;
+    case "smartBannerPortrait":
+      return AdSize.SMART_BANNER;
+    case "smartBannerLandscape":
+      return AdSize.SMART_BANNER;
+    case "smartBanner":
+      return AdSize.SMART_BANNER;
+    case "fliud":
+      return AdSize.FLUID;
+    case "skyscraper":
+      return AdSize.WIDE_SKYSCRAPER;
+    default:
+      return AdSize.BANNER;
     }
   }
 }
