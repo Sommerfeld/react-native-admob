@@ -215,7 +215,7 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
 
   @ReactProp(name = PROP_SLOT_UUID)
   public void setSlotUUID(final ReactViewGroup view, final String slotUUID) {
-    mSlotUUID = slotUUID
+    mSlotUUID = slotUUID;
     loadAd(newAdView);
   }
 
