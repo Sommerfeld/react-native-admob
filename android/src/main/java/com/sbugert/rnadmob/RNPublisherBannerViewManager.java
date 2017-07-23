@@ -19,6 +19,15 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
 
+import com.amazon.device.ads.AdError;
+import com.amazon.device.ads.AdRegistration;
+import com.amazon.device.ads.DTBAdCallback;
+import com.amazon.device.ads.DTBAdLoader;
+import com.amazon.device.ads.DTBAdRequest;
+import com.amazon.device.ads.DTBAdResponse;
+import com.amazon.device.ads.DTBAdSize;
+import com.amazon.device.ads.DTBAdUtil;
+
 import java.util.Map;
 
 public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGroup> implements AppEventListener {
@@ -28,8 +37,10 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
   public static final String PROP_BANNER_SIZE = "bannerSize";
   public static final String PROP_AD_UNIT_ID = "adUnitID";
   public static final String PROP_TEST_DEVICE_ID = "testDeviceID";
+  public static final String PROP_SLOT_UUID = "slotUUID";
 
   private String testDeviceID = null;
+  private String mSlotUUID = null;
 
   public enum Events {
     EVENT_SIZE_CHANGE("onSizeChange"),
@@ -202,23 +213,48 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
     loadAd(newAdView);
   }
 
+  @ReactProp(name = PROP_SLOT_UUID)
+  public void setSlotUUID(final ReactViewGroup view, final String slotUUID) {
+    mSlotUUID = slotUUID
+    loadAd(newAdView);
+  }
+
+
   @ReactProp(name = PROP_TEST_DEVICE_ID)
   public void setPropTestDeviceID(final ReactViewGroup view, final String testDeviceID) {
     this.testDeviceID = testDeviceID;
   }
 
   private void loadAd(final PublisherAdView adView) {
-    if (adView.getAdSizes() != null && adView.getAdUnitId() != null) {
-      PublisherAdRequest.Builder adRequestBuilder = new PublisherAdRequest.Builder();
-      if (testDeviceID != null){
-        if (testDeviceID.equals("EMULATOR")) {
-          adRequestBuilder = adRequestBuilder.addTestDevice(PublisherAdRequest.DEVICE_ID_EMULATOR);
-        } else {
-          adRequestBuilder = adRequestBuilder.addTestDevice(testDeviceID);
+
+    if (mSlotUUID != null && adView.getAdSizes() != null && adView.getAdUnitId() != null) {
+      final DTBAdRequest loader = new DTBAdRequest();
+      
+      loader.setSizes(new DTBAdSize(adView.getAdSize().getWidth(), adView.getAdSize().getHeight(), mSlotUUID));
+      loader.loadAd(new DTBAdCallback() {
+        @Override
+        public void onFailure(AdError adError) {
+          Log.e("AdError", "Oops banner ad load has failed: " + adError.getMessage());
+          /**Please implement the logic to send ad request without our parameters if you want to
+          show ads from other ad networks when Amazon ad request fails**/
+          PublisherAdRequest.Builder adRequestBuilder = new PublisherAdRequest.Builder();
+          if (testDeviceID != null){
+            if (testDeviceID.equals("EMULATOR")) {
+              adRequestBuilder = adRequestBuilder.addTestDevice(PublisherAdRequest.DEVICE_ID_EMULATOR);
+            } else {
+              adRequestBuilder = adRequestBuilder.addTestDevice(testDeviceID);
+            }
+          }
+          PublisherAdRequest adRequest = adRequestBuilder.build();
+          adView.loadAd(adRequest);
         }
-      }
-      PublisherAdRequest adRequest = adRequestBuilder.build();
-      adView.loadAd(adRequest);
+        @Override
+        public void onSuccess(DTBAdResponse dtbAdResponse) {
+          final PublisherAdRequest adRequest =
+          DTBAdUtil.INSTANCE.createPublisherAdRequestBuilder(dtbAdResponse).build();
+          adView.loadAd(adRequest);
+        }
+      });
     }
   }
 
