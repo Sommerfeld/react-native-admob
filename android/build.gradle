@@ -15,4 +15,5 @@ android {
 dependencies {
     compile 'com.facebook.react:react-native:+'
     compile 'com.google.android.gms:play-services-ads:+'
+    compile 'com.amazon.device.ads:DTBAndroidSDK-7.1@aar'
 }
