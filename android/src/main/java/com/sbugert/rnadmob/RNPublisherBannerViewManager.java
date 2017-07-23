@@ -277,6 +277,10 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
         return AdSize.SMART_BANNER;
       case "smartBanner":
         return AdSize.SMART_BANNER;
+      case "fliud":
+        return AdSize.FLUID;
+      case "skyscraper":
+        return AdSize.WIDE_SKYSCRAPER;
       default:
         return AdSize.BANNER;
     }
