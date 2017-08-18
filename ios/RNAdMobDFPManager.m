@@ -28,6 +28,7 @@ RCT_EXPORT_VIEW_PROPERTY(bannerSize, NSString);
 RCT_EXPORT_VIEW_PROPERTY(adUnitID, NSString);
 RCT_EXPORT_VIEW_PROPERTY(slotUUID, NSString);
 RCT_EXPORT_VIEW_PROPERTY(testDeviceID, NSString);
+RCT_EXPORT_VIEW_PROPERTY(customTargeting, NSDictionary);
 
 RCT_EXPORT_VIEW_PROPERTY(onSizeChange, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdmobDispatchAppEvent, RCTBubblingEventBlock)

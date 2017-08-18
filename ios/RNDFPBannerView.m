@@ -55,7 +55,7 @@
 }
 
 -(void)loadBanner {
-    if (_adUnitID && _slotUUID && _bannerSize) {
+    if (_adUnitID && _slotUUID && _bannerSize && _customTargeting && _testDeviceID) {
         GADAdSize size = [self getAdSizeFromString:_bannerSize];
         _bannerView = [[DFPBannerView alloc] initWithAdSize:size];
         [_bannerView setAppEventDelegate:self]; //added Admob event dispatch listener
@@ -119,6 +119,18 @@ didReceiveAppEvent:(NSString *)name
 {
     if(![slotUUID isEqual:_slotUUID]) {
         _slotUUID = slotUUID;
+        if (_bannerView) {
+            [_bannerView removeFromSuperview];
+        }
+        
+        [self loadBanner];
+    }
+}
+
+- (void)setCustomTargeting:(NSDictionary *)customTargeting
+{
+    if(![customTargeting isEqual:_customTargeting]) {
+        _customTargeting = customTargeting;
         if (_bannerView) {
             [_bannerView removeFromSuperview];
         }
@@ -213,6 +225,7 @@ didFailToReceiveAdWithError:(GADRequestError *)error {
             request.testDevices = @[_testDeviceID];
         }
     }
+    request.customTargeting = _customTargeting;
     [_bannerView loadRequest:request];
 }
 - (void)onSuccess: (DTBAdResponse *)adResponse {    
@@ -226,7 +239,12 @@ didFailToReceiveAdWithError:(GADRequestError *)error {
             request.testDevices = @[_testDeviceID];
         }
     }
-    request.customTargeting = adResponse.customTargetting;
+    
+    NSMutableDictionary *customTargetingMerged = [NSMutableDictionary new];
+    [customTargetingMerged addEntriesFromDictionary:_customTargeting];
+    [customTargetingMerged addEntriesFromDictionary:adResponse.customTargetting];
+    
+    request.customTargeting = customTargetingMerged;
     [_bannerView loadRequest:request];
 }
 

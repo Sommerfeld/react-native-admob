@@ -19,6 +19,8 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.doubleclick.PublisherAdView;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableArray;
 
 import com.amazon.device.ads.AdError;
 import com.amazon.device.ads.AdRegistration;
@@ -30,6 +32,8 @@ import com.amazon.device.ads.DTBAdSize;
 import com.amazon.device.ads.DTBAdUtil;
 
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;;
 
 public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGroup> implements AppEventListener {
 
@@ -39,9 +43,11 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
   public static final String PROP_AD_UNIT_ID = "adUnitID";
   public static final String PROP_TEST_DEVICE_ID = "testDeviceID";
   public static final String PROP_SLOT_UUID = "slotUUID";
+  public static final String PROP_CUSTOM_TARGETING = "customTargeting";
 
   private String testDeviceID = null;
   private String mSlotUUID = null;
+  private ReadableMap mCustomTargeting = null;
 
   public enum Events {
     EVENT_SIZE_CHANGE("onSizeChange"), EVENT_RECEIVE_AD("onAdViewDidReceiveAd"), EVENT_ERROR(
@@ -217,6 +223,13 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
     loadAd(adView);
   }
 
+  @ReactProp(name = PROP_CUSTOM_TARGETING)
+  public void setPropCustomTargeting(final ReactViewGroup view, final ReadableMap customTargeting) {
+    mCustomTargeting = customTargeting;
+    PublisherAdView adView = (PublisherAdView) view.getChildAt(0);
+    loadAd(adView);
+  }
+
   @ReactProp(name = PROP_TEST_DEVICE_ID)
   public void setPropTestDeviceID(final ReactViewGroup view, final String testDeviceID) {
     this.testDeviceID = testDeviceID;
@@ -224,7 +237,7 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
 
   private void loadAd(final PublisherAdView adView) {
 
-    if (mSlotUUID != null && adView.getAdSizes() != null && adView.getAdUnitId() != null) {
+    if (mSlotUUID != null && adView.getAdSizes() != null && adView.getAdUnitId() != null && mCustomTargeting != null) {
       final DTBAdRequest loader = new DTBAdRequest();
 
       loader.setSizes(new DTBAdSize(adView.getAdSize().getWidth(), adView.getAdSize().getHeight(), mSlotUUID));
@@ -235,6 +248,25 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
           /**Please implement the logic to send ad request without our parameters if you want to
           show ads from other ad networks when Amazon ad request fails**/
           PublisherAdRequest.Builder adRequestBuilder = new PublisherAdRequest.Builder();
+
+          if (mCustomTargeting.hasKey("pfSessionPiCount")) {
+            int pfSessionPiCount = mCustomTargeting.getInt("pfSessionPiCount");
+            adRequestBuilder.addCustomTargeting("pfSessionPiCount", Integer.toString(pfSessionPiCount));
+          }
+          if (mCustomTargeting.hasKey("pfTag")) {
+            ReadableArray pfTag = mCustomTargeting.getArray("pfTag");
+            List<String> pfTagList = new ArrayList<String>();
+            int size = pfTag.size();
+            for (int i = 0; i < size; i = i + 1) {
+              pfTagList.add(pfTag.getString(i));
+            }
+            adRequestBuilder.addCustomTargeting("pfTag", pfTagList);
+          }
+          if (mCustomTargeting.hasKey("pfArticle")) {
+            String pfArticle = mCustomTargeting.getString("pfArticle");
+            adRequestBuilder.addCustomTargeting("pfArticle", pfArticle);
+          }
+
           if (testDeviceID != null) {
             if (testDeviceID.equals("EMULATOR")) {
               adRequestBuilder = adRequestBuilder.addTestDevice(PublisherAdRequest.DEVICE_ID_EMULATOR);
@@ -250,6 +282,25 @@ public class RNPublisherBannerViewManager extends SimpleViewManager<ReactViewGro
         public void onSuccess(DTBAdResponse dtbAdResponse) {
           PublisherAdRequest.Builder adRequestBuilder = DTBAdUtil.INSTANCE
               .createPublisherAdRequestBuilder(dtbAdResponse);
+
+          if (mCustomTargeting.hasKey("pfSessionPiCount")) {
+            int pfSessionPiCount = mCustomTargeting.getInt("pfSessionPiCount");
+            adRequestBuilder.addCustomTargeting("pfSessionPiCount", Integer.toString(pfSessionPiCount));
+          }
+          if (mCustomTargeting.hasKey("pfTag")) {
+            ReadableArray pfTag = mCustomTargeting.getArray("pfTag");
+            List<String> pfTagList = new ArrayList<String>();
+            int size = pfTag.size();
+            for (int i = 0; i < size; i = i + 1) {
+              pfTagList.add(pfTag.getString(i));
+            }
+            adRequestBuilder.addCustomTargeting("pfTag", pfTagList);
+          }
+          if (mCustomTargeting.hasKey("pfArticle")) {
+            String pfArticle = mCustomTargeting.getString("pfArticle");
+            adRequestBuilder.addCustomTargeting("pfArticle", pfArticle);
+          }
+
           if (testDeviceID != null) {
             if (testDeviceID.equals("EMULATOR")) {
               adRequestBuilder = adRequestBuilder.addTestDevice(PublisherAdRequest.DEVICE_ID_EMULATOR);

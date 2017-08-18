@@ -31,6 +31,7 @@ export default class PublisherBanner extends React.Component {
       didFailToReceiveAdWithError,
       admobDispatchAppEvent,
       slotUUID,
+      customTargeting,
     } = this.props;
     return (
       <View style={this.props.style}>
@@ -48,6 +49,7 @@ export default class PublisherBanner extends React.Component {
           testDeviceID={testDeviceID}
           adUnitID={adUnitID}
           slotUUID={slotUUID}
+          customTargeting={customTargeting}
           bannerSize={bannerSize}
         />
       </View>
@@ -82,6 +84,11 @@ PublisherBanner.propTypes = {
    * slotUUID
    */
   slotUUID: React.PropTypes.string,
+
+  /**
+   * customTargeting
+   */
+  customTargeting: React.PropTypes.object,
 
   /**
    * Test device ID
